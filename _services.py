@@ -9,8 +9,6 @@ import time
 
 HEADLESS = False
 TIMEFORCAPCHA = 15
-custom_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
-# custom_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
 
 def log_in():
     try:
@@ -28,6 +26,8 @@ def log_in():
 def open_driver():
     options = Options()
     options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36')
+    if HEADLESS:
+        options.add_argument('--headless')
     driver = webdriver.Chrome(options=options)
     return driver
 
@@ -37,7 +37,7 @@ def get_cookies(driver, user_login, user_password):
         time.sleep(1)
         driver.find_element(By.ID, 'loginform-username').send_keys(user_login)
         driver.find_element(By.ID, 'loginform-password').send_keys(user_password)
-        time.sleep(15)
+        time.sleep(TIMEFORCAPCHA)
         driver.find_element(By.XPATH, '//*[@id="login-form"]/button').click()
         time.sleep(1)
         return driver.get_cookies()
@@ -48,7 +48,7 @@ def get_cookies(driver, user_login, user_password):
 def get_last_client_id(driver, cookies):
     for cookie in cookies:
         driver.add_cookie(cookie)
-        print(f'{cookie}')
+        # print(f'{cookie}')
     driver.refresh()
     print('driver.refresh')
     driver.get('https://encoreiset.fitbase.io/clients')
@@ -214,21 +214,30 @@ def main():
     last_client = get_last_client_id(driver, cookies)
     print('last_client')
 
-    start_user = 1  # Начальный клиент
-    end_user = last_client    # Конечный клиент
-    # end_user = 9
+    # first_user, last_user = 1, last_client
+    first_user, last_user = 1, 9
+    
+    
     all_data = []
-    for client_id in range(start_user, end_user + 1):
+    for client_id in range(first_user, last_user + 1):
         print(f'Обработка клиента {client_id}')
         client_data = process_client(client_id, cookies)
         all_data.extend(client_data)
 
     if all_data:
-        columns = ['ФИО', 'ID клиента', 'Код (номер) первого активного абонемента', 'Название', 'Дата оплаты', 'Начало действия', 'Окончание действия', 'Дата активации', 'Стоимость']
+        columns = ['ФИО', 
+                   'ID клиента', 
+                   'Код (номер) первого активного абонемента', 
+                   'Название', 
+                   'Дата оплаты', 
+                   'Начало действия', 
+                   'Окончание действия', 
+                   'Дата активации', 
+                   'Стоимость']
         df = pd.DataFrame(all_data, columns=columns)
         df['Стоимость'] = df['Стоимость'].astype(int)
 
-        output_file = f'services ({start_user}-{end_user}).xlsx'
+        output_file = f'services ({first_user}-{last_user}).xlsx'
         with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
             df.to_excel(writer, index=False)
 
