@@ -10,12 +10,12 @@ import re
 import time
 import os
 
+
 HEADLESS = False
 TIMEFORCAPCHA = 15
 custom_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
-
-
 # custom_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
+
 
 def open_driver():
     options = Options()
@@ -178,8 +178,6 @@ def request(client_id):
 
 if __name__ == '__main__':
 
-    start_time = time.time()
-
     try:
         with open('user.txt', 'r') as f:
             content = f.readlines()
@@ -211,8 +209,6 @@ if __name__ == '__main__':
     # first_client, last_client = 4800, 4900
     # first_client, last_client = 44, 45
     # first_client, last_client = 145, 165
-
-    print(first_client, last_client)
 
     data = []
 
@@ -262,6 +258,3 @@ if __name__ == '__main__':
 
                 workbook.save(f'subscriptions ({first_client}-{last_client}).xlsx')
                 break
-
-    end_time = time.time()
-    print(f'Время выполнения: {round((end_time - start_time) / 3600, 1)} часов')
