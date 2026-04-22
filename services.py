@@ -6,12 +6,7 @@ import requests
 import pandas as pd
 from openpyxl import load_workbook
 import time
-import sys
-import os
 # https://github.com/birlurnou
-
-sys.stdout.reconfigure(line_buffering=True)
-sys.stderr.reconfigure(line_buffering=True)
 
 def log_in():
     try:
@@ -27,7 +22,7 @@ def log_in():
 
 def open_driver():
     options = Options()
-    options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36')
+    options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36')
     driver = webdriver.Chrome(options=options)
     return driver
 
@@ -48,13 +43,18 @@ def get_cookies(driver, user_login, user_password):
 def get_last_client_id(driver, cookies):
     for cookie in cookies:
         driver.add_cookie(cookie)
+        print(f'{cookie}')
     driver.refresh()
+    print('driver.refresh')
     driver.get('https://encoreiset.fitbase.io/clients')
+    print('driver.get')
     try:
-        last_client = driver.find_element(By.XPATH, '//*[@id="example"]/table/tbody/tr[1]/td[1]/input').get_attribute('value')
+        # last_client = driver.find_element(By.XPATH, '//*[@id="example"]/table/tbody/tr[1]/td[1]/input').get_attribute('value')
+        last_client = driver.find_element(By.XPATH, '//*[@id="example-container"]/table/tbody/tr[1]/td[1]/input').get_attribute('value')
         print(f"Количество клиентов: {last_client}")
         return int(last_client)
     except Exception:
+        print('Клиенты не найдены')
         exit()
     finally:
         driver.quit()
@@ -138,7 +138,7 @@ def process_client(client_id, cookies):
                         if date_text:
                             try:
                                 year = int(date_text.split('.')[-1].rstrip())
-                                if year >= 2025:
+                                if year >= 2026:
                                     service_id = row['id'].split('-')[2]
                                     services.append(service_id)
                             except ValueError:
@@ -159,7 +159,7 @@ def process_client(client_id, cookies):
         tds = table1.find_all('td')
 
         end_service = tds[7].text.split(' ')[0] if tds[7].text.split(' ')[0] != '-' else ''
-        if not end_service or int(end_service.split('.')[2]) >= 2025:
+        if not end_service or int(end_service.split('.')[2]) >= 2026:
             # print(end_service)
             name_service = tds[0].text
             try:
@@ -197,11 +197,17 @@ def process_client(client_id, cookies):
     return data
 
 def main():
+
     start_time = time.time()
+    print('Старт')
     user_login, user_password = log_in()
+    print('user_login, user_password')
     driver = open_driver()
+    print('driver')
     cookies = get_cookies(driver, user_login, user_password)
+    print('cookies')
     last_client = get_last_client_id(driver, cookies)
+    print('last_client')
 
     start_user = 1  # Начальный клиент
     end_user = last_client    # Конечный клиент

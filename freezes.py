@@ -7,12 +7,8 @@ import pandas as pd
 from openpyxl import load_workbook
 import re
 import time
-import sys
 import os
 # https://github.com/birlurnou
-
-sys.stdout.reconfigure(line_buffering=True)
-sys.stderr.reconfigure(line_buffering=True)
 
 start_time = time.time()
 
@@ -41,7 +37,7 @@ def get_cookie():
         driver.implicitly_wait(10)
         username = driver.find_element(By.ID, 'loginform-username').send_keys(user_login)
         password = driver.find_element(By.ID, 'loginform-password').send_keys(user_password)
-        time.sleep(20)
+        time.sleep(15)
         login_button = driver.find_element(By.XPATH, '//*[@id="login-form"]/button').click()
         time.sleep(1)
         cookies = driver.get_cookies()
@@ -54,14 +50,14 @@ def add_cookie(cookies):
 
     for cookie in cookies:
         driver.add_cookie(cookie)
-    # print('Куки добавлены')
+    print('Куки добавлены')
     driver.refresh()
     url_client = f'https://encoreiset.fitbase.io/clients'
     driver.get(url_client)
 
     try:
         driver.implicitly_wait(3)
-        last_client = driver.find_element(By.XPATH, '''//*[@id="example"]/table/tbody/tr[1]/td[1]/input''').get_attribute('value')
+        last_client = driver.find_element(By.XPATH, '''//*[@id="example-container"]/table/tbody/tr[1]/td[1]/input''').get_attribute('value')
         # print(last_client)
         print(f"Количество клиентов: {last_client}")
     except:
@@ -129,7 +125,9 @@ def request(client_id):
 
             pattern = r"\d\d.\d\d.\d\d\d\d"
             if re.match(pattern, date_end):
-                if int(date_end.split('.')[2]) < 2025:
+                if int(date_end.split('.')[2]) < 2026:
+                # if not ((int(date_end.split('.')[2]) == 2025 and int(date_end.split('.')[1]) >= 10) or int(
+                #         date_end.split('.')[2]) > 2025 or not date_end):
                     continue
             abonement_price = abonement_list[9][1].split('из ')[1].split(',00')[0].strip().replace(' ','')
 
