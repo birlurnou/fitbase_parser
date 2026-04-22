@@ -23,4 +23,4 @@
 
 ### Python пакеты
 ```bash
-pip install -r ruquirements
+pip install -r ruquirements.txt
