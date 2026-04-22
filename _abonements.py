@@ -151,20 +151,20 @@ def request(client_id):
                 # [2] == 2025 and [1] >= 10 or [2] > 2025 or not date_end = дата окончания >= 2025-10-01 or null
                 if int(date_end.split('.')[2]) >= 2026:
                     obj = [
-                        name,  # имя
-                        client_id,  # id клиента
-                        # card_id,                  # название (hex) абонемента
-                        card_name,  # название абонемента
-                        card_code,  # код абонемента
-                        date_payment,  # дата оплаты
-                        date_start,  # дата активации
-                        date_end,  # дата окончания
-                        # contact,                  # контакты
-                        subscription_price,  # полная стоимость
-                        subscription_price_rofl,  # Сумма из названия
-                        subscription_price_sum,  # Сумма платежей из истории
-                        subscription_price_current,  # x (x из ...)
-                        subscription_price_goal,  # x (... из x)
+                        name,                           # имя
+                        client_id,                      # id клиента
+                        # card_id,                      # название (hex) абонемента
+                        card_name,                      # название абонемента
+                        card_code,                      # код абонемента
+                        date_payment,                   # дата оплаты
+                        date_start,                     # дата активации
+                        date_end,                       # дата окончания
+                        # contact,                      # контакты
+                        subscription_price,             # полная стоимость
+                        subscription_price_rofl,        # Сумма из названия
+                        subscription_price_sum,         # Сумма платежей из истории
+                        subscription_price_current,     # x (x из ...)
+                        subscription_price_goal,        # x (... из x)
                     ]
 
                     data.append(obj)
