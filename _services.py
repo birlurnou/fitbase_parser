@@ -6,7 +6,11 @@ import requests
 import pandas as pd
 from openpyxl import load_workbook
 import time
-# https://github.com/birlurnou
+
+HEADLESS = False
+TIMEFORCAPCHA = 15
+custom_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
+# custom_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
 
 def log_in():
     try:
@@ -17,7 +21,8 @@ def log_in():
         if not user_login or not user_password:
             exit()
         return user_login, user_password
-    except Exception:
+    except Exception as e:
+        print(f'Error in log_in(): {e}')
         exit()
 
 def open_driver():
@@ -37,7 +42,7 @@ def get_cookies(driver, user_login, user_password):
         time.sleep(1)
         return driver.get_cookies()
     except Exception as e:
-        print(f"Ошибка при получении куки: {e}")
+        print(f'Error in get_cookies(): {e}')
         exit()
 
 def get_last_client_id(driver, cookies):
@@ -49,12 +54,11 @@ def get_last_client_id(driver, cookies):
     driver.get('https://encoreiset.fitbase.io/clients')
     print('driver.get')
     try:
-        # last_client = driver.find_element(By.XPATH, '//*[@id="example"]/table/tbody/tr[1]/td[1]/input').get_attribute('value')
         last_client = driver.find_element(By.XPATH, '//*[@id="example-container"]/table/tbody/tr[1]/td[1]/input').get_attribute('value')
         print(f"Количество клиентов: {last_client}")
         return int(last_client)
-    except Exception:
-        print('Клиенты не найдены')
+    except Exception as e:
+        print(f'Error in get_last_client_id(): {e}')
         exit()
     finally:
         driver.quit()
@@ -71,6 +75,7 @@ def fetch(url, cookies, retries=3):
             response = session.get(url, headers=headers, timeout=30)
             return response.text
         except Exception as e:
+            print(f'Error in fetch(): {e}')
             if i == retries - 1:
                 print(f"Ошибка при запросе к {url}: {e}")
                 return None

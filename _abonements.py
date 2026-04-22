@@ -233,7 +233,7 @@ if __name__ == '__main__':
         while True:
             final = 0
             try:
-                with pd.ExcelWriter(f'subscriptions ({first_client}-{last_client}).xlsx', engine='openpyxl') as writer:
+                with pd.ExcelWriter(f'abonements ({first_client}-{last_client}).xlsx', engine='openpyxl') as writer:
                     df.to_excel(writer, index=False)
                 final = 1
             except:
@@ -242,7 +242,7 @@ if __name__ == '__main__':
             if final == 1:
                 print('Данные записаны')
 
-                workbook = load_workbook(f'subscriptions ({first_client}-{last_client}).xlsx')
+                workbook = load_workbook(f'abonements ({first_client}-{last_client}).xlsx')
                 sheet = workbook.active
                 for column in sheet.columns:
                     max_length = 0
@@ -256,5 +256,5 @@ if __name__ == '__main__':
                     adjusted_width = (max_length + 2)
                     sheet.column_dimensions[column_letter].width = adjusted_width
 
-                workbook.save(f'subscriptions ({first_client}-{last_client}).xlsx')
+                workbook.save(f'abonements ({first_client}-{last_client}).xlsx')
                 break

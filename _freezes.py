@@ -39,7 +39,7 @@ def get_cookie():
         return cookies
 
     except Exception as e:
-        print(e)
+        print(f'Error in get_cookie(): {e}')
 
 def add_cookie(cookies):
 
@@ -55,7 +55,8 @@ def add_cookie(cookies):
         last_client = driver.find_element(By.XPATH, '''//*[@id="example-container"]/table/tbody/tr[1]/td[1]/input''').get_attribute('value')
         # print(last_client)
         print(f"Количество клиентов: {last_client}")
-    except:
+    except Exception as e:
+        print(f'Error in add_cookie(): {e}')
         exit()
     finally:
         driver.quit()
@@ -121,6 +122,9 @@ def request(client_id):
             pattern = r"\d\d.\d\d.\d\d\d\d"
             if re.match(pattern, date_end):
                 if int(date_end.split('.')[2]) < 2026:
+                # date_end - дата окончания абонемента
+                # date_end.split('.')[2] - year
+                # date_end.split('.')[1] - month
                 # if not ((int(date_end.split('.')[2]) == 2025 and int(date_end.split('.')[1]) >= 10) or int(
                 #         date_end.split('.')[2]) > 2025 or not date_end):
                     continue
@@ -250,6 +254,3 @@ if __name__ == '__main__':
 
                 workbook.save(f'freezes ({first_client}-{last_client}).xlsx')
                 break
-
-    end_time = time.time()
-    print(f'Время выполнения: {round((end_time - start_time)/3600, 1)} часов')
