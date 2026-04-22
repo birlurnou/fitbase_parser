@@ -8,25 +8,20 @@ from openpyxl import load_workbook
 import re
 import time
 import os
-# https://github.com/birlurnou
 
-start_time = time.time()
 
-try:
-    with open('user.txt', 'r') as f:
-        content = f.readlines()
-    user_login = content[0].strip()
-    user_password = content[1].strip()
-    if user_login == '' or user_password == '':
-        exit()
-except:
-    exit()
+HEADLESS = False
+TIMEFORCAPCHA = 15
+custom_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
+# custom_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
+
 
 def open_driver():
 
     options = Options()
     options.add_argument(f'--user-agent={custom_user_agent}')
-    #options.add_argument('--headless')
+    if HEADLESS:
+        options.add_argument('--headless')
     driver = webdriver.Chrome(options=options)
     return driver
 
@@ -37,7 +32,7 @@ def get_cookie():
         driver.implicitly_wait(10)
         username = driver.find_element(By.ID, 'loginform-username').send_keys(user_login)
         password = driver.find_element(By.ID, 'loginform-password').send_keys(user_password)
-        time.sleep(15)
+        time.sleep(TIMEFORCAPCHA)
         login_button = driver.find_element(By.XPATH, '//*[@id="login-form"]/button').click()
         time.sleep(1)
         cookies = driver.get_cookies()
@@ -170,78 +165,91 @@ def request(client_id):
                 print(obj)
 
     except Exception as e:
-        #print(f'Клиент {client_id} не обработан')
-        print(e)
-    finally:
-        #print(f'Клиент {client_id} обработан')
-        ...
+        print(f'Клиент {client_id} не обработан: {e}')
 
-custom_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
-s = requests.Session()
-s.headers.update({'user-agent': custom_user_agent})
+if __name__ == '__main__':
 
-url = 'https://encoreiset.fitbase.io'
+    try:
+        with open('user.txt', 'r') as f:
+            content = f.readlines()
+        user_login = content[0].strip()
+        user_password = content[1].strip()
+        if user_login == '' or user_password == '':
+            exit()
+    except Exception as e:
+        print(f'Error with open user.txt: {e}')
+        exit()
 
-driver = open_driver()
-cookies = get_cookie()
-last_client = add_cookie(cookies)
+    s = requests.Session()
+    s.headers.update({'user-agent': custom_user_agent})
 
-data = []
+    url = 'https://encoreiset.fitbase.io'
 
-for i in range(1, int(last_client)+1):
-    request(i)
+    try:
+        driver = open_driver()
+        print('Драйвер успешно создан')
+    except Exception as e:
+        print(f'Ошибка создания драйвера: {e}')
+        print(f'Тип ошибки: {type(e)}')
 
-# for i in range(1, 62):
-#     request(i)
+    cookies = get_cookie()
+    last_client = add_cookie(cookies)
+    first_client, last_client = 1, last_client
+    # first_client, last_client = 1, 62
 
-columns = ['ФИО',
-           'ID клиента',
-           'ID карты',
-           'Имя карты',
-           'Код карты',
-           'Дата активации',
-           'Дата окончания',
-           'Контакт',
-           'Добавленные дни',
-           'Начало заморозки',
-           'Конец заморозки',
-           'Конец контракта 1',
-           'Конец контракта 2',
-           'Дата использования',
-           'Стоимость абонемента']
+    data = []
 
-if data != []:
-    df = pd.DataFrame(data, columns=columns)
-    df['Добавленные дни'] = df['Добавленные дни'].astype(int)
-    df['Стоимость абонемента'] = df['Стоимость абонемента'].astype(int)
-    while True:
-        final = 0
-        try:
-            with pd.ExcelWriter(f'freezes (1-{last_client}).xlsx', engine='openpyxl') as writer:
-                df.to_excel(writer, index=False)
-            final = 1
-        except:
-            print('Ошибка записи в файл')
-            time.sleep(1)
-        if final == 1:
-            print('Данные записаны')
+    for i in range(first_client, int(last_client)+1):
+        request(i)
 
-            workbook = load_workbook(f'freezes (1-{last_client}).xlsx')
-            sheet = workbook.active
-            for column in sheet.columns:
-                max_length = 0
-                column_letter = column[0].column_letter
-                for cell in column:
-                    try:
-                        if len(str(cell.value)) > max_length:
-                            max_length = len(str(cell.value))
-                    except:
-                        pass
-                adjusted_width = (max_length + 2)
-                sheet.column_dimensions[column_letter].width = adjusted_width
+    columns = ['ФИО',
+               'ID клиента',
+               'ID карты',
+               'Имя карты',
+               'Код карты',
+               'Дата активации',
+               'Дата окончания',
+               'Контакт',
+               'Добавленные дни',
+               'Начало заморозки',
+               'Конец заморозки',
+               'Конец контракта 1',
+               'Конец контракта 2',
+               'Дата использования',
+               'Стоимость абонемента']
 
-            workbook.save(f'freezes (1-{last_client}).xlsx')
-            break
+    if data != []:
+        df = pd.DataFrame(data, columns=columns)
+        df['Добавленные дни'] = df['Добавленные дни'].astype(int)
+        df['Стоимость абонемента'] = df['Стоимость абонемента'].astype(int)
+        while True:
+            final = 0
+            try:
+                with pd.ExcelWriter(f'freezes ({first_client}-{last_client}).xlsx', engine='openpyxl') as writer:
+                    df.to_excel(writer, index=False)
+                final = 1
+            except:
+                print('Ошибка записи в файл')
+                time.sleep(1)
+            if final == 1:
+                print('Данные записаны')
 
-end_time = time.time()
-print(f'Время выполнения: {round((end_time - start_time)/3600, 1)} часов')
+                workbook = load_workbook(f'freezes ({first_client}-{last_client}).xlsx')
+                sheet = workbook.active
+                for column in sheet.columns:
+                    max_length = 0
+                    column_letter = column[0].column_letter
+                    for cell in column:
+                        try:
+                            if len(str(cell.value)) > max_length:
+                                max_length = len(str(cell.value))
+                        except:
+                            pass
+                    adjusted_width = (max_length + 2)
+                    sheet.column_dimensions[column_letter].width = adjusted_width
+
+                workbook.save(f'freezes ({first_client}-{last_client}).xlsx')
+                break
+
+    end_time = time.time()
+    print(f'Время выполнения: {round((end_time - start_time)/3600, 1)} часов')
